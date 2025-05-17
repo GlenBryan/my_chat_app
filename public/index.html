@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Discord</title>
+</head>
+<body>
+  <h2>Mini Discord Chat</h2>
+  <input type="text" id="username" placeholder="Your name">
+  <button onclick="connect()">Join</button>
+  <br><br>
+  <input type="text" id="to" placeholder="To (username or 'group')">
+  <input type="text" id="message" placeholder="Message">
+  <button onclick="sendMessage()">Send</button>
+  <ul id="chat"></ul>
+
+  <script>
+    let socket;
+    function connect() {
+      const username = document.getElementById('username').value;
+      socket = new WebSocket("ws://localhost:3000");
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ type: "register", username }));
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const chat = document.getElementById("chat");
+        const li = document.createElement("li");
+        li.textContent = (data.private ? "[Private] " : "") + data.message;
+        chat.appendChild(li);
+      };
+    }
+
+    function sendMessage() {
+      const to = document.getElementById("to").value;
+      const msg = document.getElementById("message").value;
+      const type = (to === "group") ? "group" : "private";
+      socket.send(JSON.stringify({ type, to, message: msg }));
+    }
+  </script>
+</body>
+</html>
